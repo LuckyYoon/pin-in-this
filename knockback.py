@@ -3,8 +3,8 @@
 ╔══════════════════════════════════════════════════════╗
 ║           K N O C K B A C K   A R E N A             ║
 ║                                                      ║
-║  Host a game :  python knockback_arena.py --server   ║
-║  Join a game :  python knockback_arena.py --join IP  ║
+║  Host a game :  python knockback.py --server   ║
+║  Join a game :  python knockback.py --join IP  ║
 ╚══════════════════════════════════════════════════════╝
 
 Controls:
@@ -131,7 +131,7 @@ class GameServer:
         print("=" * 52)
         print("  KNOCKBACK ARENA  —  Server running")
         print(f"  LAN address : {lan_ip}:{PORT}")
-        print(f"  Others join : python knockback_arena.py --join {lan_ip}")
+        print(f"  Others join : python knockback.py --join {lan_ip}")
         print("=" * 52)
 
         threading.Thread(target=self._accept_loop, daemon=True).start()
