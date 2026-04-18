@@ -56,7 +56,7 @@ while run:
         if event.type == pygame.QUIT:
          run = False
     #Allow player to move
-    controller.move(player,False)
+    controller.move(player)
 
     #Create player and boss, will likely be moved to view class
     screen.fill((0, 0, 0))  # clear screen
@@ -72,12 +72,12 @@ while run:
     rect = boss_img.get_rect(center= (boss.X,boss.Y))
     screen.blit(boss_img, rect)
 
-    if delay(timers,"newattack",2000*random.random() + 1000) and not controller.phase2:
+    if delay(timers,"newattack",2000*random.random() + 1000) and not controller.phase:
         usage = 0
         attack3on = True
         boss.attack3(player,bullets)
 
-    if delay(timers,"newattack",2000*random.random() + 1000) and controller.phase2:
+    if delay(timers,"newattack",2000*random.random() + 1000) and controller.phase:
         usage = 0
         if 2 * random.random() <= 1:
             attack1on = True

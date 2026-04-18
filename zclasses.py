@@ -4,6 +4,8 @@ import random
 import time
 from zconfig import *
 
+
+# Model Classes
 class Player:
 
     def __init__(self,x,y):
@@ -15,28 +17,6 @@ class Player:
         self.alive = True
         self.immune = False
         self.immune_start_time = 0
-
-class Controller:
-
-    def move(self, player, phase2):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a]:
-            player.x -= player.movespeed
-        if keys[pygame.K_d]:
-            player.x += player.movespeed
-        if keys[pygame.K_w]:
-            player.y -= player.movespeed
-        if keys[pygame.K_s]:
-            player.y += player.movespeed
-        self.phase()
-
-    def phase(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_9]:
-            print("Enter Phase 2")
-            self.phase2 = True
-
-            
 
 class Boss:
     
@@ -134,6 +114,37 @@ class Boss:
             bullet.dy = dy
             bullet.launch = True
             bullets.append(bullet)
+
+
+        
+
+class Controller:
+
+
+    def __init__(self):
+        self.phase = False
+
+    def move(self, player):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]:
+            player.x -= player.movespeed
+        if keys[pygame.K_d]:
+            player.x += player.movespeed
+        if keys[pygame.K_w]:
+            player.y -= player.movespeed
+        if keys[pygame.K_s]:
+            player.y += player.movespeed
+        self.phase2()
+
+    def phase2(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_9]:
+            print("Enter Phase 2")
+            self.phase = True
+
+            
+
+
             
             
             
