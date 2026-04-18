@@ -34,19 +34,28 @@ PORT = 50007
 W, H = 960, 640
 FPS = 60
 
-PLAYER_RADIUS = 10
-PLAYER_SPEED = 250.0
+PLAYER_RADIUS = 12
+PLAYER_SPEED = 300.0
 
-SNAPSHOT_HZ = 60.0
-INPUT_HZ = 60.0
+SNAPSHOT_HZ = 30.0
+INPUT_HZ = 30.0
 
 MIN_PLAYERS = 1
-COUNTDOWN_SECONDS = 5.0
-INTERMISSION_SECONDS = 6.0
+COUNTDOWN_SECONDS = 3.0
+INTERMISSION_SECONDS = 4.0
 PLAYER_TIMEOUT = 20.0
 
 # Client connection timeout (seconds before giving up)
 JOIN_TIMEOUT = 15.0
+
+# ── Interpolation ─────────────────────────────────────────────────────────────
+# How far behind real-time the client renders.  100 ms works well on a LAN;
+# raise to ~150 ms if you see occasional jumps on a worse network.
+INTERP_DELAY: float = 0.033
+
+# How long to keep snapshot history (seconds).  Must be > INTERP_DELAY.
+SNAPSHOT_BUFFER_DURATION: float = 0.1
+# ─────────────────────────────────────────────────────────────────────────────
 
 BG = (16, 18, 24)
 GRID = (28, 32, 42)
@@ -378,7 +387,7 @@ class GameServer:
 
         segments = build_segments_from_gaps(W, gaps)
         return Obstacle(y=-h, h=h, speed=speed, segments=segments)
-    
+
     def _update_player_movement(self, dt: float):
         for p in self.players.values():
             if not p.alive:
@@ -458,7 +467,7 @@ class GameServer:
                     p.alive = False
 
             alive_ids = [pid for pid, p in self.players.items() if p.alive]
-            if len(alive_ids) <= 0 and len(self.players) > 0:
+            if len(alive_ids) <= 1 and len(self.players) > 0:
                 self.phase = "finished"
                 self.intermission = INTERMISSION_SECONDS
                 self.winner_pid = alive_ids[0] if alive_ids else None
@@ -520,6 +529,13 @@ class GameServer:
             pass
 
 
+# ── Snapshot buffer entry ─────────────────────────────────────────────────────
+# Each entry is (local_recv_time: float, state: dict).
+# We keep SNAPSHOT_BUFFER_DURATION seconds of history so the interpolator
+# always has at least two bracketing frames to work with.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 class GameClient:
     def __init__(self, server_ip: str, port: int, name: str):
         self.server_addr = (server_ip, port)
@@ -540,6 +556,11 @@ class GameClient:
 
         self.colors = {}
 
+        # ── Interpolation buffer ──────────────────────────────────────────────
+        # List of (recv_time, state_dict) tuples, oldest first.
+        self.snapshot_buffer: List[Tuple[float, dict]] = []
+        # ─────────────────────────────────────────────────────────────────────
+
         pygame.init()
         pygame.display.set_caption("Hole LAN")
         self.screen = pygame.display.set_mode((W, H))
@@ -548,6 +569,82 @@ class GameClient:
         self.font = pygame.font.SysFont(None, 24)
         self.small = pygame.font.SysFont(None, 18)
         self.big = pygame.font.SysFont(None, 40)
+
+    # ── Interpolation helpers ─────────────────────────────────────────────────
+
+    def _interpolated_players(self, render_time: float) -> List:
+        """
+        Return a player list with x/y lerped to render_time.
+
+        We scan the snapshot buffer for the two consecutive entries that
+        bracket render_time, then linearly interpolate each player's position.
+        If render_time is outside the buffer we fall back to the nearest edge.
+        """
+        buf = self.snapshot_buffer
+        if not buf:
+            return []
+
+        # Not enough history yet — use the oldest snapshot as-is.
+        if render_time <= buf[0][0]:
+            return buf[0][1].get("p", [])
+
+        # render_time is ahead of all snapshots (very unlikely on a LAN, but
+        # possible at startup).  Return the latest snapshot without extrapolation
+        # to avoid wild position predictions.
+        if render_time >= buf[-1][0]:
+            return buf[-1][1].get("p", [])
+
+        # Find the bracketing pair (t0 <= render_time < t1).
+        for i in range(len(buf) - 1):
+            t0, s0 = buf[i]
+            t1, s1 = buf[i + 1]
+            if t0 <= render_time <= t1:
+                span = t1 - t0
+                alpha = (render_time - t0) / span if span > 0.0 else 1.0
+
+                # Index the older snapshot by player-id for O(1) lookup.
+                prev: Dict[int, list] = {e[0]: e for e in s0.get("p", [])}
+
+                result = []
+                for entry in s1.get("p", []):
+                    pid, pname, x1, y1, alive = entry
+                    if pid in prev:
+                        _, _, x0, y0, _ = prev[pid]
+                        # Lerp position; keep the latest alive flag so deaths
+                        # are reflected immediately rather than being delayed.
+                        x = x0 + (x1 - x0) * alpha
+                        y = y0 + (y1 - y0) * alpha
+                        result.append([pid, pname, x, y, alive])
+                    else:
+                        # Player just joined — no previous sample; use as-is.
+                        result.append(entry)
+                return result
+
+        # Should be unreachable, but be safe.
+        return buf[-1][1].get("p", [])
+
+    def _dead_reckoned_obstacles(self, now: float) -> List:
+        """
+        Return an obstacle list with y positions extrapolated forward from the
+        latest snapshot by (now - recv_time) * speed.
+
+        Obstacles move at a perfectly constant speed set by the server, so
+        extrapolation is exact — there is no error accumulation.  This avoids
+        the pop-in / pop-out artefact you would get if you tried to interpolate
+        obstacles that might appear or disappear between snapshots.
+        """
+        if not self.snapshot_buffer:
+            return []
+
+        recv_time, latest = self.snapshot_buffer[-1]
+        dt = max(0.0, now - recv_time)   # never go backwards
+
+        result = []
+        for oy, oh, speed, segments in latest.get("o", []):
+            result.append([oy + speed * dt, oh, speed, segments])
+        return result
+
+    # ─────────────────────────────────────────────────────────────────────────
 
     def run(self):
         join_deadline = time.perf_counter() + JOIN_TIMEOUT
@@ -636,12 +733,24 @@ class GameClient:
             elif t == "s":
                 self.state = msg
                 self.host_pid = msg.get("h")
-                # FIX: snapshots now carry "my_id" so the client learns its
-                # PID even when the welcome packet was lost in transit.
+                # Snapshots carry "my_id" so the client learns its PID even
+                # when the welcome packet was lost in transit.
                 if self.my_pid is None:
                     my_id = msg.get("my_id")
                     if my_id is not None:
                         self.my_pid = int(my_id)
+
+                # ── Push into interpolation buffer ────────────────────────
+                recv_time = time.perf_counter()
+                self.snapshot_buffer.append((recv_time, msg))
+
+                # Prune entries older than SNAPSHOT_BUFFER_DURATION seconds.
+                cutoff = recv_time - SNAPSHOT_BUFFER_DURATION
+                # Keep at least one entry so _interpolated_players always has
+                # something to fall back to.
+                while len(self.snapshot_buffer) > 1 and self.snapshot_buffer[0][0] < cutoff:
+                    self.snapshot_buffer.pop(0)
+                # ─────────────────────────────────────────────────────────
 
     def _handle_events(self):
         changed = False
@@ -734,11 +843,18 @@ class GameClient:
             pygame.display.flip()
             return
 
-        for oy, oh, speed, segments in self.state.get("o", []):
+        now = time.perf_counter()
+
+        # ── Interpolated / dead-reckoned scene data ───────────────────────────
+        render_time = now - INTERP_DELAY
+        players = self._interpolated_players(render_time)
+        obstacles = self._dead_reckoned_obstacles(now)
+        # ─────────────────────────────────────────────────────────────────────
+
+        for oy, oh, _speed, segments in obstacles:
             for sx, sw in segments:
                 pygame.draw.rect(self.screen, BROWN, pygame.Rect(int(sx), int(oy), int(sw), int(oh)))
 
-        players = self.state.get("p", [])
         for pid, name, x, y, alive in players:
             color = self._player_color(pid) if alive else (110, 110, 120)
             pygame.draw.circle(self.screen, color, (int(x), int(y)), PLAYER_RADIUS)
