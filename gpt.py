@@ -2,7 +2,6 @@ import pygame
 import math
 import random
 import time
-from config import *
 
 # Initialize
 pygame.init()
@@ -11,10 +10,10 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Basic Bullet Hell Bossfight")
 clock = pygame.time.Clock()
 
-bullet_img = pygame.image.load("pixil-frame-0.png").convert_alpha()
-bullet_img = pygame.transform.scale(bullet_img, (16, 16))  # resize if needed
-boss_img = pygame.image.load("pixilart-frames/goober0.png").convert_alpha()
-boss_img = pygame.transform.smoothscale(boss_img, (400, 400))  # resize if needed
+bullet_img = pygame.image.load("sprites/BOSS/BOSS - attacks/Boss small attack.png").convert_alpha()
+bullet_img = pygame.transform.scale(bullet_img, (200, 200))  # resize if needed
+boss_img = pygame.image.load("sprites/BOSS/BOSS - frames/BOSS1.png").convert_alpha()
+boss_img = pygame.transform.scale(boss_img, (400, 400))  # resize if needed
 
 
 # Player

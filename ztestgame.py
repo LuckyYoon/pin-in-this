@@ -55,13 +55,13 @@ while run:
 
     if delay(timers,"newframe",200):
         boss_img = pygame.image.load(f"sprites/BOSS/BOSS - frames/BOSS{num}.png").convert_alpha()
-        
+        boss_img = pygame.transform.scale(boss_img, (boss.size * 15, boss.size * 15))
+        hero_img = pygame.image.load(f"sprites/HERO/HERO - frames/HERO{num}.png").convert_alpha()
+        hero_img = pygame.transform.scale(hero_img, (player.size * 16, player.size * 16))
         num += 1
         if num >= 4:
             num = 0
     
-    #rect = boss_img.get_rect(center= (boss.X,boss.Y))
-    #screen.blit(boss_img, rect)
 
     if delay(timers,"newattack",2000*random.random() + 1000) and not controller.phase:
         usage = 0
@@ -109,16 +109,18 @@ while run:
         fire_bullet(bullets,player)
     boss.move_boss()  
 
-    view.draw_player(player)
-    view.draw_boss(boss)
+    view.draw_player(player,hero_img)
+    view.draw_boss(boss,boss_img)
 
     bullets = [b for b in bullets if 0 <= b.p_x <= WIN_W and 0 <= b.p_y <= WIN_H]
     for b in bullets:
-        view.draw_bullet(b)
+        view.draw_bullet(b,bullet_img)
     
     attacks = [a for a in attacks if 0 <= a.p_x <= WIN_W and 0 <= a.p_y <= WIN_H]
     for a in attacks:
-        view.draw_bullet(a)
+        view.draw_bullet(a,attack_img)
+        if a.hit == True:
+            boss_img = pygame.image.load("sprites/BOSS/BOSS damaged.png") 
 
         
         
@@ -133,6 +135,7 @@ while run:
     if boss.hp <= 500:
         controller.phase = True
     
+
     pygame.display.flip()
     if pygame.time.get_ticks() >= 60000 or player.hp<=0 or boss.hp <=0 :
         pygame.quit()

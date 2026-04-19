@@ -26,7 +26,7 @@ class Player:
         self.x = x
         self.y = y
         self.hp = 100
-        self.size = 8
+        self.size = 10
         self.movespeed = 4
         self.alive = True
         self.immune = False
@@ -61,7 +61,7 @@ class Boss:
         self.x = X
         self.y = Y
         self.hp = 1000
-        self.size = 20
+        self.size = 30
         self.new_x = X
         self.new_y = Y
         self.movespeed = 0
@@ -301,6 +301,7 @@ class PlayerProjectile(Projectile):
     def __init__(self,p_speed,p_size,p_damage,p_x,p_y):
         super().__init__(p_speed,p_size,p_damage,p_x,p_y)
         self.delay = 0
+        self.hit = False
 
     def launch_projectile(self):
         self.p_x += self.dx * self.p_speed
@@ -314,7 +315,8 @@ class PlayerProjectile(Projectile):
         Args:
             player: An instance of the player class
         """
-
+        if self.hit:
+            return
         #Math for calculating a collision
         dist = math.hypot(boss.x - self.p_x, boss.y - self.p_y)
         #Check for collision and not immune
@@ -322,6 +324,7 @@ class PlayerProjectile(Projectile):
             boss.hp -= self.p_damage
             print("Boss Hit!")
             print(boss.hp)
+            self.hit = True  # prevent future hits
             
     
 
@@ -335,40 +338,40 @@ class View:
     """
     Class Containing functions to draw all sprites.
     """
-    def draw_player(self, player):
+    def draw_player(self, player, player_img):
         """
         Draws the sprite for the player.
 
         Args:
             player: instance of the Player class
         """
-        pygame.draw.circle(screen, (50, 150, 255),
-            (int(player.x), int(player.y)), player.size)
+        rect = player_img.get_rect(center= (player.x,player.y))
+        screen.blit(player_img, rect)
         
 
-    def draw_boss(self, boss):
+    def draw_boss(self, boss, boss_img):
         """
         Draws the sprite for the boss.
 
         Args:
             boss: instance of the Player class
         """
-        #pygame.draw.circle(screen, (255, 50, 50),
-           # (int(boss.x), int(boss.y)), boss.size)
         rect = boss_img.get_rect(center= (boss.x,boss.y))
         screen.blit(boss_img, rect)
             
                            
-    def draw_bullet(self, bullet):
+    def draw_bullet(self, bullet, bullet_img):
         """
         Draws the sprite for the projectiles.
 
         Args:
             bullet: instance of the Projectile class
         """    
-        color = (255, 50, 50) if bullet.delay > 0 else (50, 200, 50)
-        pygame.draw.circle(screen, color,
-            (int(bullet.p_x), int(bullet.p_y)), bullet.p_size)
+        #color = (255, 50, 50) if bullet.delay > 0 else (50, 200, 50)
+        #pygame.draw.circle(screen, color,
+            #(int(bullet.p_x), int(bullet.p_y)), bullet.p_size)
+        rect = bullet_img.get_rect(center=(bullet.p_x, bullet.p_y))
+        screen.blit(bullet_img, rect)
 
 
 # Controller Class
