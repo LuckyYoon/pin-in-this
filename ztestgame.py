@@ -26,19 +26,8 @@ attack2on = False
 attack3on = False
 num = 0
 timers = {}
-bullets = []  
-
-
-
-
-
-
-    
-
-        
-
-    
-
+bullets = [] 
+attacks = [] 
 
 
 from zclasses import *
@@ -57,6 +46,8 @@ while run:
          run = False
     #Allow player to move
     controller.move(player)
+    controller.attack(player,attacks,timers)
+    fire_attack(attacks, boss)
 
     #Create player and boss, will likely be moved to view class
     screen.fill((0, 0, 0))  # clear screen
@@ -124,6 +115,10 @@ while run:
     bullets = [b for b in bullets if 0 <= b.p_x <= WIN_W and 0 <= b.p_y <= WIN_H]
     for b in bullets:
         view.draw_bullet(b)
+    
+    attacks = [a for a in attacks if 0 <= a.p_x <= WIN_W and 0 <= a.p_y <= WIN_H]
+    for a in attacks:
+        view.draw_bullet(a)
 
         
         
@@ -135,9 +130,10 @@ while run:
         if pygame.time.get_ticks() - player.immune_start_time >= IMMUNE_DURATION:
             player.immune = False
 
+    if boss.hp <= 500:
+        controller.phase = True
     
     pygame.display.flip()
-    if pygame.time.get_ticks() >= 30000 or player.hp<=0:
+    if pygame.time.get_ticks() >= 60000 or player.hp<=0 or boss.hp <=0 :
         pygame.quit()
         run = False
-       

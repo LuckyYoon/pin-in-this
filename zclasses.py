@@ -58,10 +58,10 @@ class Boss:
             X: float that's the starting x location of the Boss
             y: float that's the starting y location of the Boss
         """
-        self.X = X
-        self.Y = Y
-        self.HP = 1000
-        self.SIZE = 20
+        self.x = X
+        self.y = Y
+        self.hp = 1000
+        self.size = 20
         self.new_x = X
         self.new_y = Y
         self.movespeed = 0
@@ -71,19 +71,19 @@ class Boss:
     def random_move(self):
         self.new_x = WIN_W * random.random() 
         self.new_y = WIN_H * random.random()
-        self.dx = self.new_x-self.X
-        self.dy = self.new_y-self.Y
+        self.dx = self.new_x-self.x
+        self.dy = self.new_y-self.y
         distance = math.hypot(self.dx,self.dy)
         if distance != 0:
             self.dx /= distance
             self.dy /= distance
 
     def move_boss(self):
-        self.X += 5*self.dx
-        self.Y += 5*self.dy
-        if self.X == self.new_x and self.Y == self.new_y:
+        self.x += 5*self.dx
+        self.y += 5*self.dy
+        if self.x == self.new_x and self.y == self.new_y:
             self.random_move()
-        elif self.X < 20 or self.Y < 20 or self.X > WIN_W - 100 or self.Y > WIN_H - 100:
+        elif self.x < 20 or self.y < 20 or self.x > WIN_W - 100 or self.y > WIN_H - 100:
             self.random_move()
         
 
@@ -99,7 +99,7 @@ class Boss:
             # Create the velocity in y of bullet
             dy = math.sin(angle)
             #Each bullet is created as a boss projectile and added to a list
-            bullet = BossProjectile(5,5,30,self.X,self.Y)
+            bullet = BossProjectile(5,5,20,self.x,self.y)
             # The bullet directions
             bullet.dx = dx
             bullet.dy = dy
@@ -117,12 +117,12 @@ class Boss:
                
             #Each bullet is creates as a boss projectile and added to a list
                 
-            bullet = BossProjectile(2,5,30,self.X ,self.Y)
+            bullet = BossProjectile(2,5,20,self.x ,self.y)
             bullet.dx = dx
             bullet.dy = dy
             bullet.spin = True 
-            bullet.origin_x = self.X
-            bullet.origin_y = self.Y
+            bullet.origin_x = self.x
+            bullet.origin_y = self.y
             bullet.angle = angle
             
             bullets.append(bullet)
@@ -138,7 +138,7 @@ class Boss:
             # Create the velocity in y of bullet
             dy = math.sin(angle)
             #Each bullet is created as a boss projectile and added to a list
-            bullet = BossProjectile(10,4,30,player.x,player.y)
+            bullet = BossProjectile(10,4,20,player.x,player.y)
 
         # DO NOT launch immediately
             bullet.launch = False
@@ -288,6 +288,47 @@ class BossProjectile(Projectile):
             player.immune_start_time = pygame.time.get_ticks()
             #turn immune off after 0.5 sec
 
+class PlayerProjectile(Projectile):
+    """
+    Class for projectiles the Player fires. This inherits base stats from
+    the Projectile class and adds its own functions.
+
+    Attributes:
+    """
+
+
+
+    def __init__(self,p_speed,p_size,p_damage,p_x,p_y):
+        super().__init__(p_speed,p_size,p_damage,p_x,p_y)
+        self.delay = 0
+
+    def launch_projectile(self):
+        self.p_x += self.dx * self.p_speed
+        self.p_y += self.dy * self.p_speed
+
+    def boss_collision(self,boss):
+        """
+        Function to hit the boss if a player projectile comes too close.
+        The boss will lose health.
+
+        Args:
+            player: An instance of the player class
+        """
+
+        #Math for calculating a collision
+        dist = math.hypot(boss.x - self.p_x, boss.y - self.p_y)
+        #Check for collision and not immune
+        if dist < (0.9*self.p_size + boss.size):
+            boss.hp -= self.p_damage
+            print("Boss Hit!")
+            print(boss.hp)
+            
+    
+
+
+
+
+
 #View Class
 
 class View:
@@ -303,6 +344,7 @@ class View:
         """
         pygame.draw.circle(screen, (50, 150, 255),
             (int(player.x), int(player.y)), player.size)
+        
 
     def draw_boss(self, boss):
         """
@@ -311,8 +353,11 @@ class View:
         Args:
             boss: instance of the Player class
         """
-        pygame.draw.circle(screen, (255, 50, 50),
-            (int(boss.X), int(boss.Y)), boss.SIZE)
+        #pygame.draw.circle(screen, (255, 50, 50),
+           # (int(boss.x), int(boss.y)), boss.size)
+        rect = boss_img.get_rect(center= (boss.x,boss.y))
+        screen.blit(boss_img, rect)
+            
                            
     def draw_bullet(self, bullet):
         """
@@ -330,7 +375,7 @@ class View:
 
 class Controller:
     """
-    Allows the user to control Player to move using WASD inputs
+    Allows the user to control Player to move using WASD inputs and fire attacks.
     """
 
     def __init__(self):
@@ -353,6 +398,25 @@ class Controller:
             player.y += player.movespeed
         self.phase2()
 
+
+    def attack(self,player,attacks,timers):
+        """
+        Function for the player launching projectiles.
+        Args:
+            player: Instance of the player class
+        """
+        keys = pygame.key.get_pressed()
+        mouse = pygame.mouse.get_pressed()
+        if (keys[pygame.K_SPACE] or mouse[0])  and delay(timers, "player_shot", 100):
+            # create projectile from player position
+            proj = PlayerProjectile(8, 4, 20, player.x, player.y)
+
+            # shoot upward (you can change later)
+            proj.dx = 0
+            proj.dy = -1
+            attacks.append(proj)
+
+
     def phase2(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_9]:
@@ -373,6 +437,10 @@ def fire_bullet(bullets,player):
          bullet.spin_projectile()
          bullet.player_collision(player)
 
+def fire_attack(attacks,boss):
+    for attack in attacks:
+         attack.launch_projectile()
+         attack.boss_collision(boss)
 
 def delay(timers, key, ms):
     """
