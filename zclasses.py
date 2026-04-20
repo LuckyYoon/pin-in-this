@@ -47,9 +47,6 @@ class Boss:
         dx: x-direction velocity
         dy: y-direction velocity
     """
-
-
-
     def __init__(self,X,Y):
         """
         Initializes a Boss instace
@@ -67,6 +64,7 @@ class Boss:
         self.movespeed = 0
         self.dx = 0
         self.dy = 0
+        self.hit = False
 
     def random_move(self):
         self.new_x = WIN_W * random.random() 
@@ -151,6 +149,14 @@ class Boss:
             bullet.dy = dy
             bullet.launch = True
             bullets.append(bullet)
+
+    
+
+    
+
+
+
+
 
 
         
@@ -295,7 +301,7 @@ class PlayerProjectile(Projectile):
 
     Attributes:
     """
-
+    
 
 
     def __init__(self,p_speed,p_size,p_damage,p_x,p_y):
@@ -324,7 +330,10 @@ class PlayerProjectile(Projectile):
             boss.hp -= self.p_damage
             print("Boss Hit!")
             print(boss.hp)
-            self.hit = True  # prevent future hits
+
+            self.hit = True
+            boss.hit = True
+            
             
     
 
@@ -373,6 +382,64 @@ class View:
         rect = bullet_img.get_rect(center=(bullet.p_x, bullet.p_y))
         screen.blit(bullet_img, rect)
 
+    def draw_boss_healthbar(self, boss):
+        # position + size of bar
+        bar_width = 400
+        bar_height = 20
+        x = WIN_W // 2 - bar_width // 2
+        y = 20
+
+        # health ratio (0 → 1)
+        ratio = boss.hp / 1000
+
+        # background (empty bar)
+        pygame.draw.rect(screen, (60, 60, 60), (x, y, bar_width, bar_height))
+
+        # current health
+        pygame.draw.rect(screen, (200, 50, 50),
+            (x, y, int(bar_width * ratio), bar_height))
+
+        # border
+        pygame.draw.rect(screen, (255, 255, 255),
+            (x, y, bar_width, bar_height), 2)
+        
+         # Boss name
+        name_text = font.render("The Rhavenger of Yoontown", True, (255, 255, 255))
+        text_rect = name_text.get_rect(center=(WIN_W // 2, y + bar_height + 15))
+        screen.blit(name_text, text_rect)
+
+    def draw_player_healthbar(self, player):
+        bar_width = 200
+        bar_height = 15
+        x = 20
+        y = 20
+
+        # health ratio
+        ratio = player.hp / 100  # since player max is 100
+
+        # background
+        pygame.draw.rect(screen, (60, 60, 60), (x, y, bar_width, bar_height))
+
+        # color based on health
+        if ratio > 0.5:
+            color = (50, 200, 50)
+        elif ratio > 0.25:
+            color = (255, 200, 50)
+        else:
+            color = (255, 50, 50)
+
+        # fill
+        pygame.draw.rect(screen, color,
+            (x, y, int(bar_width * ratio), bar_height))
+
+        # border
+        pygame.draw.rect(screen, (255, 255, 255),
+            (x, y, bar_width, bar_height), 2)   
+
+        name_text = font.render("Gilbert", True, (255, 255, 255))
+        text_rect = name_text.get_rect(center=(x + bar_width/2, y + bar_height + 15))
+        screen.blit(name_text, text_rect)
+
 
 # Controller Class
 
@@ -410,7 +477,7 @@ class Controller:
         """
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pressed()
-        if (keys[pygame.K_SPACE] or mouse[0])  and delay(timers, "player_shot", 100):
+        if (keys[pygame.K_SPACE] or mouse[0])  and delay(timers, "player_shot", 200):
             # create projectile from player position
             proj = PlayerProjectile(8, 4, 20, player.x, player.y)
 

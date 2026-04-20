@@ -14,7 +14,8 @@ boss_img = pygame.image.load("sprites/BOSS/BOSS - frames/BOSS1.png")
 boss_img = pygame.transform.smoothscale(boss_img, (400, 400))  # resize if needed
 hero_img = pygame.image.load("sprites/HERO/HERO - frames/HERO1.png")
 screen = pygame.display.set_mode((WIN_W, WIN_H))
+font = pygame.font.SysFont("times new roman", 24)
 pygame.display.set_caption("Hell")
-IMMUNE_DURATION = 500
+IMMUNE_DURATION = 400
 
 #functions: 

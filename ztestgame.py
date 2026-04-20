@@ -31,7 +31,7 @@ attacks = []
 
 
 from zclasses import *
-boss = Boss(480,360)
+boss = Boss(400,200)
 player = Player(50,20)
 controller = Controller()
 view = View()
@@ -39,7 +39,7 @@ view = View()
 
 while run:
     clock.tick(60)
-
+    boss.hit = False
     #Register user inputs
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -55,7 +55,7 @@ while run:
 
     if delay(timers,"newframe",200):
         boss_img = pygame.image.load(f"sprites/BOSS/BOSS - frames/BOSS{num}.png").convert_alpha()
-        boss_img = pygame.transform.scale(boss_img, (boss.size * 15, boss.size * 15))
+        boss_img = pygame.transform.scale(boss_img, (boss.size * 6, boss.size * 10))
         hero_img = pygame.image.load(f"sprites/HERO/HERO - frames/HERO{num}.png").convert_alpha()
         hero_img = pygame.transform.scale(hero_img, (player.size * 16, player.size * 16))
         num += 1
@@ -107,20 +107,26 @@ while run:
     # Move bullets and such. Will be moved to diff class later.
     if attack1on or attack2on or attack3on:
         fire_bullet(bullets,player)
-    boss.move_boss()  
+    #boss.move_boss()  
 
     view.draw_player(player,hero_img)
+
+    
     view.draw_boss(boss,boss_img)
+    view.draw_boss_healthbar(boss)
+    view.draw_player_healthbar(player)
 
     bullets = [b for b in bullets if 0 <= b.p_x <= WIN_W and 0 <= b.p_y <= WIN_H]
     for b in bullets:
         view.draw_bullet(b,bullet_img)
     
     attacks = [a for a in attacks if 0 <= a.p_x <= WIN_W and 0 <= a.p_y <= WIN_H]
+    
     for a in attacks:
         view.draw_bullet(a,attack_img)
-        if a.hit == True:
-            boss_img = pygame.image.load("sprites/BOSS/BOSS damaged.png") 
+        
+    if boss.hit == True:
+        boss_img = pygame.image.load("sprites/BOSS/BOSS damaged.png")
 
         
         
