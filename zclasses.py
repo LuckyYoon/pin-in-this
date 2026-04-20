@@ -58,7 +58,7 @@ class Boss:
         self.x = X
         self.y = Y
         self.hp = 1000
-        self.size = 30
+        self.size = 60
         self.new_x = X
         self.new_y = Y
         self.movespeed = 0
@@ -84,7 +84,7 @@ class Boss:
         elif self.x < 20 or self.y < 20 or self.x > WIN_W - 100 or self.y > WIN_H - 100:
             self.random_move()
         
-
+    
     def attack1(self,bullets,displace):
         #Code for the boss's first attack
         self.displace = displace
@@ -151,21 +151,6 @@ class Boss:
             bullets.append(bullet)
 
     
-
-    
-
-
-
-
-
-
-        
-
-
-
-
-
-
             
             
             
@@ -286,7 +271,7 @@ class BossProjectile(Projectile):
         if dist < (0.9*self.p_size + player.size) and not player.immune:
             player.hp -= self.p_damage
             print("Hit!")
-            print(player.hp)
+            print(player.hp) 
             #slight pause after being hit
             pygame.time.delay(200)
             #player is immune
@@ -482,8 +467,8 @@ class Controller:
             proj = PlayerProjectile(8, 4, 20, player.x, player.y)
 
             # shoot upward (you can change later)
-            proj.dx = 0
-            proj.dy = -1
+            proj.dx = 1
+            proj.dy = 0
             attacks.append(proj)
 
 

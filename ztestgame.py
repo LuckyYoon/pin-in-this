@@ -31,7 +31,7 @@ attacks = []
 
 
 from zclasses import *
-boss = Boss(400,200)
+boss = Boss(800,WIN_H/2)
 player = Player(50,20)
 controller = Controller()
 view = View()
