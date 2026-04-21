@@ -109,13 +109,16 @@ while run:
         fire_bullet(bullets,player)
     #boss.move_boss()  
 
-    view.draw_player(player,hero_img)
+    view.draw_player(player, hero_img)
 
     
     view.draw_boss(boss,boss_img)
     view.draw_boss_healthbar(boss)
     view.draw_player_healthbar(player)
+    if boss.hit == True:
+        boss_img = boss_hit_img
 
+        
     bullets = [b for b in bullets if 0 <= b.p_x <= WIN_W and 0 <= b.p_y <= WIN_H]
     for b in bullets:
         view.draw_bullet(b,bullet_img)
@@ -125,8 +128,7 @@ while run:
     for a in attacks:
         view.draw_bullet(a,attack_img)
         
-    if boss.hit == True:
-        boss_img = pygame.image.load("sprites/BOSS/BOSS damaged.png")
+    
 
         
         

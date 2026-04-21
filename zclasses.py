@@ -67,6 +67,7 @@ class Boss:
         self.hit = False
 
     def random_move(self):
+        
         self.new_x = WIN_W * random.random() 
         self.new_y = WIN_H * random.random()
         self.dx = self.new_x-self.x
@@ -86,6 +87,13 @@ class Boss:
         
     
     def attack1(self,bullets,displace):
+        """
+        Creates a radial attack spawning on the boss.
+        Args:
+            bullets: The global list of boss projectiles
+            displace: A float representing a random number to shift the angle
+            projectiles launch a little.
+        """
         #Code for the boss's first attack
         self.displace = displace
         for i in range(30):
@@ -368,6 +376,12 @@ class View:
         screen.blit(bullet_img, rect)
 
     def draw_boss_healthbar(self, boss):
+        """
+        Displays the boss healthbar at the top of the screen displaying the boss's
+        current hp
+        Args:
+            boss: instance of the Boss Class   
+        """
         # position + size of bar
         bar_width = 400
         bar_height = 20
@@ -394,6 +408,12 @@ class View:
         screen.blit(name_text, text_rect)
 
     def draw_player_healthbar(self, player):
+        """
+        Displays the player healthbar at the top left of the screen displaying the player's
+        current hp
+        Args:
+            player: instance of the Player Class   
+        """
         bar_width = 200
         bar_height = 15
         x = 20
@@ -479,7 +499,6 @@ class Controller:
             self.phase = True
 
 
-
 def fire_bullet(bullets,player):
      """
      Function to fire boss projectiles.
@@ -493,6 +512,12 @@ def fire_bullet(bullets,player):
          bullet.player_collision(player)
 
 def fire_attack(attacks,boss):
+    """
+    Function to fire player projectiles.
+    Args:
+        attacks: The list of player attacks (instances of player projectiles)
+        boss: Instance of the Boss class
+    """
     for attack in attacks:
          attack.launch_projectile()
          attack.boss_collision(boss)
@@ -501,7 +526,8 @@ def delay(timers, key, ms):
     """
      Function to create delays for specific actions.
      Args:
-        timers: A dictionary of different objects to time.
+        timers: A dictionary of different objects to time. Keys are names and values are
+        delay integers in ms
         key: The name of the timer
         ms: The amount of time in ms to delay by
     Returns:

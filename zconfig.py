@@ -13,6 +13,8 @@ attack_img = pygame.transform.scale(attack_img, (16, 10))  # resize if needed
 boss_img = pygame.image.load("sprites/BOSS/BOSS - frames/BOSS1.png")
 boss_img = pygame.transform.smoothscale(boss_img, (400, 400))  # resize if needed
 hero_img = pygame.image.load("sprites/HERO/HERO - frames/HERO1.png")
+boss_hit_img = pygame.image.load("sprites/BOSS/BOSS damaged.png")
+boss_hit_img = pygame.transform.smoothscale(boss_hit_img, (800, 800))  # resize if needed
 screen = pygame.display.set_mode((WIN_W, WIN_H))
 font = pygame.font.SysFont("times new roman", 24)
 pygame.display.set_caption("Hell")
