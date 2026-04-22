@@ -59,6 +59,7 @@ class Boss:
         self.y = Y
         self.hp = 1000
         self.size = 60
+        self.hitbox = (self.x-WIN_W//10, self.y-int(WIN_H*2/5), WIN_W//5, int(WIN_H*4/5))
         self.new_x = X
         self.new_y = Y
         self.movespeed = 0
@@ -302,9 +303,13 @@ class PlayerProjectile(Projectile):
         self.delay = 0
         self.hit = False
 
+        self.player_p_hitbox = (self.p_x,self.p_y,2,5)
+
+
     def launch_projectile(self):
         self.p_x += self.dx * self.p_speed
         self.p_y += self.dy * self.p_speed
+        self.player_p_hitbox = (self.p_x,self.p_y,2,5)
 
     def boss_collision(self,boss):
         """
@@ -317,9 +322,11 @@ class PlayerProjectile(Projectile):
         if self.hit:
             return
         #Math for calculating a collision
-        dist = math.hypot(boss.x - self.p_x, boss.y - self.p_y)
+        player_rect = pygame.Rect(self.player_p_hitbox)
+        boss_rect = pygame.Rect(boss.hitbox)
+
         #Check for collision and not immune
-        if dist < (0.9*self.p_size + boss.size):
+        if player_rect.colliderect(boss_rect):
             boss.hp -= self.p_damage
             print("Boss Hit!")
             print(boss.hp)
