@@ -225,12 +225,12 @@ class Boss:
             None
         """
         #single bullet
-            bullet = BossProjectile(20,24*1.2,20,WIN_W-50,spawn_pos)
-            bullet.dx = -1
-            bullet.dy = 0
-            bullet.launch = True
-            bullet.image = pygame.transform.scale(ball_img, (120*1.2, 60*1.2))  # resize if needed
-            bullets.append(bullet)
+        bullet = BossProjectile(20,24*1.2,20,WIN_W-50,spawn_pos)
+        bullet.dx = -1
+        bullet.dy = 0
+        bullet.launch = True
+        bullet.image = pygame.transform.scale(ball_img, (120*1.2, 60*1.2))  # resize if needed
+        bullets.append(bullet)
     
     def attack6(self, bullets, player):
         """
