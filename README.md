@@ -1,6 +1,6 @@
 # Yoontown Rhavenge
 
-Yoontown Rhavenge is a top-down shoot'em up game. Our game takes inspiration from [Bullet Hell](https://en.wikipedia.org/wiki/Bullet_hell), a subgenre of shoot'em up games also known as **manic shooter**. The game is written in Python 3.14 and utilizes the popular [pygame-ce](https://github.com/pygame-community/pygame-ce) library. All classes for the game are located in [zclasses.py](zclasses.py) and the configs are located in [zconfig.py](zconfig.py). All sprites and sound effects were made from scratch specifically for the game.
+Yoontown Rhavenge is a top-down shoot'em up game. Our game takes inspiration from [Bullet Hell](https://en.wikipedia.org/wiki/Bullet_hell), a subgenre of shoot'em up games also known as **manic shooter**. The game is written in Python 3.14 and utilizes the popular [pygame-ce](https://github.com/pygame-community/pygame-ce) library. All classes for the game are located in [zclasses.py](zclasses.py) and the configs are located in [zconfig.py](zconfig.py). All sprites and sound tracks were made from scratch specifically for the game.
 
 ![The Rhavenger of Yoontown in Phase 1](images/phase-1.png)
 
