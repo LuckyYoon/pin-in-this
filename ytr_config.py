@@ -2,9 +2,13 @@ import pygame
 import math
 import random
 import time
+
+# Set Game and Window
 pygame.init()
 immune = False
 WIN_W, WIN_H = 1560 * 1, 1000 * 1
+
+# load audios
 bulletspawn = pygame.mixer.Sound("audio/bulletspawn.mp3")
 bulletspawn.set_volume(0.2)
 bloom = pygame.mixer.Sound("audio/bloom.wav")
@@ -25,7 +29,7 @@ lose = pygame.mixer.Sound("audio/lose.mp3")
 starfall_laugh = pygame.mixer.Sound("audio/dark_laugh.mp3")
 player_damage = pygame.mixer.Sound("audio/playerdamage.mp3")
 
-
+# load image sprites
 win_text_img = pygame.image.load("sprites/You Win.png")
 win_text_img = pygame.transform.scale(win_text_img, (1000,200))
 lose_text_img = pygame.image.load("sprites/You Lose.png")
@@ -46,17 +50,14 @@ boss_hit_img = pygame.image.load("sprites/BOSS/BOSS damaged.png")
 boss_hit_img = pygame.transform.smoothscale(boss_hit_img, (400, 400))  # resize if needed
 warning_img = pygame.image.load("sprites/BOSS/BOSS - attacks/warning.png")
 warning_img = pygame.transform.smoothscale(warning_img, (20*1.2, 100*1.2))  # resize if needed
+arena = pygame.image.load("sprites/Arena.png").convert()
+arena = pygame.transform.scale(arena,(WIN_W,WIN_H))
+arena2 = pygame.image.load("sprites/Arena Stage 2.png").convert()
+arena2 = pygame.transform.scale(arena2,(WIN_W,WIN_H))
 
-
+# Set display, fonts, and texts
 screen = pygame.display.set_mode((WIN_W, WIN_H))
 font = pygame.font.SysFont("times new roman", 40)
 small_font = pygame.font.SysFont("times new roman", 28)
 pygame.display.set_caption("Hell")
 IMMUNE_DURATION = 400
-arena = pygame.image.load("sprites/Arena.png").convert()
-arena = pygame.transform.scale(arena,(WIN_W,WIN_H))
-arena2 = pygame.image.load("sprites/Arena Stage 2.png").convert()
-arena2 = pygame.transform.scale(arena2,(WIN_W,WIN_H))
-#functions:
-
-
