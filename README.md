@@ -25,7 +25,7 @@ Running the game on Python 3.14 is recommended. However, the game should run fin
 To install Yoontown Rhavenge, first clone this repository.
 
 ```bash
-git clone https://github.com/LuckyYoon/yoontown-rhavenge.git
+git clone https://github.com/olincollege/yoontown-rhavenge
 ```
 
 Next, pip install the community edition of pygame.
