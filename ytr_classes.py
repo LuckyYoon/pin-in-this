@@ -1,16 +1,19 @@
-import pygame
+"""
+Game classes for the Yoontown Runner game.
+Defines model classes (Player, Boss, Projectiles), view classes, and controller classes.
+"""
+
 import math
 import random
-import time
-from ytr_config import *
 
+import pygame  # pylint: disable=no-member
 
-
+from ytr_config import *  # pylint: disable=wildcard-import,unused-wildcard-import
 
 # Model Classes
 
 
-class Player:
+class Player:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
     """
     Class for storing information about the user of the game. It stores the player's
     position, health, size, speed, living status, and immunity status.
@@ -26,7 +29,8 @@ class Player:
         immune: Boolean representing if the player is immune or not.
         immune_start_time: Float representing the time a player becomes immune.
     """
-    def __init__(self,x,y):
+
+    def __init__(self, x, y):
         self.x = x
         self.y = y
         self.hp = 325
@@ -40,7 +44,7 @@ class Player:
 class Boss:
     """
     Creates a Boss character that the user will fight and attempt to defeat.
-    This class stores the Boss's position, health, size, and methods representing the different boss attacks.
+    Stores the Boss's position, health, size, and methods for the different boss attacks.
 
 
     Attributes:
@@ -51,24 +55,28 @@ class Boss:
         hitbox:
         hit: Boolean representing if the boss was hit or not
     """
-    def __init__(self,X,Y):
+
+    def __init__(self, x, y):
         """
-        Initializes a Boss instace
+        Initializes a Boss instance.
 
-
-        ARGS:
-            X: float that's the starting x location of the Boss
+        Args:
+            x: float that's the starting x location of the Boss
             y: float that's the starting y location of the Boss
         """
-        self.x = X
-        self.y = Y
+        self.x = x
+        self.y = y
         self.hp = 1000
         self.size = 60
-        self.hitbox = (self.x-WIN_W//70, self.y-int(WIN_H*1/5), WIN_W//15, int(WIN_H*2/5))
+        self.hitbox = (
+            self.x - WIN_W // 70,
+            self.y - int(WIN_H * 1 / 5),
+            WIN_W // 15,
+            int(WIN_H * 2 / 5),
+        )
         self.hit = False
 
-
-    def radial(self,bullets,displace):
+    def radial(self, bullets, displace):
         """
         Creates a radial attack spawning on the boss.
         Args:
@@ -78,22 +86,24 @@ class Boss:
         """
         # 22 bullets
         for i in range(30):
-        # Math to do radial attack
+            # Math to do radial attack
             # Create the angle for bullet direction
             angle = (2 * math.pi / 30) * i + displace
             # Create the velocity in x and y of bullet
             dx = math.cos(angle)
             dy = math.sin(angle)
-            #Each bullet is created as a boss projectile and added to a list
-            bullet = BossProjectile(6,8,15,self.x - 90,self.y-20)
+            # Each bullet is created as a boss projectile and added to a list
+            bullet = BossProjectile(6, 8, 15, self.x - 90, self.y - 20)
             # The bullet directions
             bullet.dx = dx
             bullet.dy = dy
             # Set the bullet to launch using launchprojectile
             bullet.launch = True
             # Set the bullet image
-            bullet.image = pygame.transform.scale(ball_img, (60 , 25 ))
-            bullet.image = pygame.transform.rotate(bullet.image, 180)  # resize if needed  # resize if needed
+            bullet.image = pygame.transform.scale(ball_img, (60, 25))
+            bullet.image = pygame.transform.rotate(
+                bullet.image, 180
+            )  # resize if needed
             # Make the image rotate depending on its angle
             angle = -math.degrees(angle)
             bullet.image = pygame.transform.rotate(bullet.image, angle)
@@ -102,10 +112,8 @@ class Boss:
             burst.play()
             # Add bullet to list
             bullets.append(bullet)
-                 
 
-
-    def spinning_radial(self,bullets,displace):
+    def spinning_radial(self, bullets, displace):
         """
         Creates a radial attack spawning on the boss with a spinning effect.
 
@@ -116,14 +124,14 @@ class Boss:
         """
         # 12 bullets
         for i in range(16):
-        #Math to do radial attack
+            # Math to do radial attack
             # Create angle for bullet direction
             angle = (2 * math.pi / 25) * i + displace
             # Create velocity in x and y of bullet
             dx = math.cos(angle)
-            dy = math.sin(angle)    
-            #Each bullet is creates as a boss projectile            
-            bullet = BossProjectile(2,5,12,self.x - 90 ,self.y-20)
+            dy = math.sin(angle)
+            # Each bullet is creates as a boss projectile
+            bullet = BossProjectile(2, 5, 12, self.x - 90, self.y - 20)
             # Set the bullets direction
             bullet.dx = dx
             bullet.dy = dy
@@ -135,13 +143,17 @@ class Boss:
             # The bullet's initial angle
             bullet.angle = angle
             # The radius the bullet is rotating
-            bullet.radius = 6 # this is a variable
-            bullet.stable_radius = 6 # this is a constant
+            bullet.radius = 6  # this is a variable
+            bullet.stable_radius = 6  # this is a constant
             # The speed of rotation for the bullet
             bullet.orbit_speed = 0.015
             # Update the bullet image
-            bullet.image = pygame.transform.scale(bullet_img, (20, 10))  # resize if needed
-            bullet.image = pygame.transform.rotate(bullet.image, 180)  # resize if needed  # resize if needed
+            bullet.image = pygame.transform.scale(
+                bullet_img, (20, 10)
+            )  # resize if needed
+            bullet.image = pygame.transform.rotate(
+                bullet.image, 180
+            )  # resize if needed
             # Rotate the image to match the angle
             angle = -math.degrees(angle)
             bullet.image = pygame.transform.rotate(bullet.image, angle)
@@ -151,7 +163,7 @@ class Boss:
             wave.stop()
             wave.play()
 
-    def blooming_radial(self,bullets,player):
+    def blooming_radial(self, bullets, player):
         """
         Creates a radial attack spawning on the player with a delay before the projectiles launch.
 
@@ -166,34 +178,35 @@ class Boss:
         bulletspawn.play()
         # 8 bullets
         for i in range(8):
-        # Math to do radial attackS
+            # Math to do radial attackS
             # Create the angle for bullet direction
             angle = (2 * math.pi / 8) * i
             # Create the velocity in x of bullet
             dx = math.cos(angle)
             # Create the velocity in y of bullet
             dy = math.sin(angle)
-            #Each bullet is created as a boss projectile and added to a list
-            bullet = BossProjectile(10,5,12,player.x,player.y)
-            
+            # Each bullet is created as a boss projectile and added to a list
+            bullet = BossProjectile(10, 5, 12, player.x, player.y)
 
-        # Makes the bullet not launch immediately
+            # Makes the bullet not launch immediately
             bullet.launch = False
 
-
-        # Set a delay before the bullets launch using launch_projectile
-            bullet.delay = 1500 # this variable is used in launch_projectile
-            bullet.spawn_time = pygame.time.get_ticks() # also used in launch_projectile to see when the first bullet spawned
+            # Set a delay before the bullets launch using launch_projectile
+            bullet.delay = 1500  # this variable is used in launch_projectile
+            bullet.spawn_time = (
+                pygame.time.get_ticks()
+            )  # also used in launch_projectile to see when the first bullet spawned
             # The bullet directions
             bullet.dx = dx
             bullet.dy = dy
             # The image of the bullet
-            bullet.image = pygame.transform.scale(bullet_img, (12, 12))  # resize if needed
+            bullet.image = pygame.transform.scale(
+                bullet_img, (12, 12)
+            )  # resize if needed
             # Add bullet to list
             bullets.append(bullet)
-           
 
-    def starfall(self,bullets,displace):
+    def starfall(self, bullets, displace):
         """
         Creates a star wave attack spawning on the right side of the screen.
 
@@ -203,23 +216,24 @@ class Boss:
         """
         # wave attack
         # 6 bullets
-        
+
         for i in range(8):
             # initialize the bullet as a boss projectile
             # Each bullet will spawn in a line based on i
-            bullet = BossProjectile(10,6*1.4,10,WIN_W-20, 0.125*WIN_H * i * displace + 60)
+            bullet = BossProjectile(
+                10, 6 * 1.4, 10, WIN_W - 20, 0.125 * WIN_H * i * displace + 60
+            )
             # Set bullet x and y direction
             bullet.dx = -1
             bullet.dy = 0
             # Launch the bullet using launch_projectile
             bullet.launch = True
             # Set bullet image
-            bullet.image = pygame.transform.scale(ball_img, (25*1.2, 10*1.2))  
+            bullet.image = pygame.transform.scale(ball_img, (25 * 1.2, 10 * 1.2))
             # Add bullet to list
             bullets.append(bullet)
-                      
-   
-    def meteor(self,bullets,spawn_pos,dull):
+
+    def meteor(self, bullets, spawn_pos, dull):
         """
         Creates a single large meteor spawning on the right side of the screen.
 
@@ -234,7 +248,7 @@ class Boss:
         # Warning projectile, dictates the position of the meteor(s)
         if dull:
             # Initialize warning as boss projectile
-            bullet = BossProjectile(10,0,0,WIN_W-100,spawn_pos)
+            bullet = BossProjectile(10, 0, 0, WIN_W - 100, spawn_pos)
             # Set the bullet image
             bullet.image = warning_img
             # Set the velocity in x and y
@@ -244,64 +258,64 @@ class Boss:
             bullet.launch = True
             # Add bullet to list
             bullets.append(bullet)
-           
-        # Actual meteor projectile  
+
+        # Actual meteor projectile
         else:
             # Initialize meteor as boss projectile
-            bullet = BossProjectile(40,24*1.4,20,WIN_W-50,spawn_pos)
+            bullet = BossProjectile(40, 24 * 1.4, 20, WIN_W - 50, spawn_pos)
             # Set the velocity in x and y
             bullet.dx = -1
             bullet.dy = 0
             # Launch the bullet using launch_projectile
             bullet.launch = True
             # Set the image of the meteor
-            bullet.image = pygame.transform.scale(ball_img, (120*1.4, 60*1.4))
+            bullet.image = pygame.transform.scale(ball_img, (120 * 1.4, 60 * 1.4))
             # Add bullet to list
             bullets.append(bullet)
             # Play the sound effect
             star.play()
 
-
     def javelin(self, bullets, player):
         """
-        Creates a javelin attack that spawns on the boss and aims at the player with a delay before the projectiles launch.
-        This attack will lodge in the corners of the screen temporarily.
-
+        Creates a javelin attack that spawns on the boss, aims at the player,
+        and lodges in the corners of the screen temporarily.
 
         Args:
             bullets: The global list of boss projectiles
             player: An instance of the player class to target
         """
 
-
-        #javelin
+        # javelin
         # Dictate velocity in x and y based on player position
         dx = player.x - self.x
         dy = player.y - self.y
         # Calculate boss distance frim player
         dist = math.hypot(dx, dy)
 
-
         # if the player is on the boss, direction is undefined
         if dist == 0:
             return
-
 
         # Make the velocity vector into a unit vector
         dx /= dist
         dy /= dist
 
-
-        # Code for the head of the javelin, or the 'prime' projectile. Segments will follow the prime
-        prime = BossProjectile(22, 10, 15, WIN_W * (0.6 + random.random() * 0.3), WIN_H*(0.2+ random.random() * 0.5))
+        # Code for the head of the javelin, the 'prime' projectile. Segments will follow it.
+        prime = BossProjectile(
+            22,
+            10,
+            15,
+            WIN_W * (0.6 + random.random() * 0.3),
+            WIN_H * (0.2 + random.random() * 0.5),
+        )
         # Dictate velocity in x and y
         prime.dx = dx
         prime.dy = dy
         # Set the delay before projectile launch using launch_projectile delay logic
-        prime.delay = 1000 # used in launch_projectile
-        prime.spawn_time = pygame.time.get_ticks() # used in launch_projectile
+        prime.delay = 1000  # used in launch_projectile
+        prime.spawn_time = pygame.time.get_ticks()  # used in launch_projectile
         # Set image of the projectile
-        prime.image = pygame.transform.scale(bullet_img, (20, 20))  
+        prime.image = pygame.transform.scale(bullet_img, (20, 20))
         # Add the prime projectile to list
         bullets.append(prime)
         # Play sound effect
@@ -317,7 +331,7 @@ class Boss:
             # This logic is used in launch_projectile
             seg.follow_prime_bullet = prime
             # Set the distance for each segment behind the prime projectile
-            seg.offset = spacing * i   # distance behind
+            seg.offset = spacing * i  # distance behind
             # Allow the segment to become "lodged" in the wall, making it not go off the screen
             seg.lodged = True
             # Set segment image
@@ -325,11 +339,10 @@ class Boss:
             # Add segment to list
             bullets.append(seg)
 
-
     def laser(self, bullets, player):
         """
-        Creates a sweeping laser that spawns near the player, waits a second, then sweeps across the arena .
-
+        Creates a sweeping laser that spawns near the player, waits a moment,
+        then sweeps across the arena.
 
         Args:
             bullets: The global list of boss projectiles
@@ -341,20 +354,19 @@ class Boss:
         dy = -50
         angle = math.atan2(dy, dx)
 
-
         # Initialize the prime projectile, where the laser will rotate around
         prime = BossProjectile(0, 12, 15, player.x + 100, player.y + 50)
         # Create the angle for spin_projectile logic
         prime.angle = angle
         # Create the sweep speed of the laser
         # Make it so the laser stays in one position
-        prime.radius = 0          
+        prime.radius = 0
         prime.stable_radius = 0
-        # Give the projectile the laser attribute, making sure it doesn't get deleted if it runs off the screen
+        # Give the projectile the laser attribute so it isn't deleted off-screen.
         prime.is_laser = True
         # Set the delay before the laser launches for spin_projectile logic
         prime.delay = 1000  # used in spin_projectile
-        prime.spawn_time = pygame.time.get_ticks() # used in spin_projectile
+        prime.spawn_time = pygame.time.get_ticks()  # used in spin_projectile
         # Sweep speed of the laser
         prime.orbit_speed = 0.05
         # Allow laser to spin
@@ -380,20 +392,19 @@ class Boss:
             # set the offset of each segment from the prime projectile
             seg.offset = spacing * i
             # Set delay before projectile starts spinning
-            seg.delay = 500 # used in spin_projectile
-            seg.spawn_time = pygame.time.get_ticks() # also used in spin_projectile
-            # Set laser attribute for projectile so it isnt deleted when it runs off the screen
+            seg.delay = 500  # used in spin_projectile
+            seg.spawn_time = pygame.time.get_ticks()  # also used in spin_projectile
+            # Set laser attribute so the segment isn't deleted when it runs off-screen.
             seg.is_laser = True
             # Set segment image
             seg.base_image = pygame.transform.scale(beam_img, (14, 14))
             seg.image = seg.base_image
-           
+
             # add segment to list
             bullets.append(seg)
-                           
-               
 
-class Projectile:
+
+class Projectile:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
     """
     Class for projectile stats. This stores projectile speed, size,
     damage, position, and velocity.
@@ -410,10 +421,12 @@ class Projectile:
         dx: float, x velocity of Projectile
         dy: float, y velocity of Projectile
     """
-    def __init__(self,p_speed,p_size,p_damage,p_x,p_y):
+
+    def __init__(
+        self, p_speed, p_size, p_damage, p_x, p_y
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         """
         Initializes a Projectile
-
 
         Args:
             p_speed: int, Speed of the projectile
@@ -422,7 +435,7 @@ class Projectile:
             p_x: float, Spawn position of the projectile in x
             p_y: float, Spawn position of the projectile in y
         """
-        self.p_speed = p_speed  
+        self.p_speed = p_speed
         self.p_size = p_size
         self.p_damage = p_damage
         self.p_x = p_x
@@ -431,13 +444,9 @@ class Projectile:
         self.origin_y = p_y
         self.dx = 0
         self.dy = 0
-   
 
 
-   
-
-
-class BossProjectile(Projectile):
+class BossProjectile(Projectile):  # pylint: disable=too-many-instance-attributes
     """
     Class for projectiles the Boss fires. This inherits base stats from
     the Projectile class and adds its own functions.
@@ -458,12 +467,14 @@ class BossProjectile(Projectile):
         offset: The distance of each projectile behind the prime projectile
         lodged: Boolean determining if the projectile should run off the screen or not
         delay: int representing the delay before a bullet launches or spins
-        spawn_time: float representing the time the bullet was initially called. This is used for the delay.
+        spawn_time: float representing the time the bullet was initially called,
+            used for delay calculations.
     """
 
-
-    def __init__(self,p_speed,p_size,p_damage,p_x,p_y):
-        super().__init__(p_speed,p_size,p_damage,p_x,p_y)
+    def __init__(
+        self, p_speed, p_size, p_damage, p_x, p_y
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+        super().__init__(p_speed, p_size, p_damage, p_x, p_y)
         self.orbit_speed = 0.01
         self.radius = 1.5
         self.stable_radius = self.radius
@@ -473,29 +484,28 @@ class BossProjectile(Projectile):
         self.launch = False
         self.image = None
         self.base_image = None
-        self.follow_prime_bullet = None   # reference to prime bullet
-        self.follow_prime_laser = None   # reference to prime bullet
-        self.offset = 0           # distance behind prime
+        self.follow_prime_bullet = None  # reference to prime bullet
+        self.follow_prime_laser = None  # reference to prime bullet
+        self.offset = 0  # distance behind prime
         self.lodged = False
         self.delay = 0
         self.spawn_time = 0
+
     def launch_projectile(self):
         """
-        Function that moves projectiles. First checks for a delay before the launch, then changes
-        projectile position based on speed, direction or if the projectile is following another one.
+        Moves projectiles. First checks for a delay, then updates position
+        based on speed, direction, or if the projectile is following another one.
         """
-
 
         # Follow a projectile
         if self.follow_prime_bullet:
             p = self.follow_prime_bullet
 
-
             # stay behind the projectile along its direction
             self.p_x = p.p_x - p.dx * self.offset
             self.p_y = p.p_y - p.dy * self.offset
             return
-               
+
         # wait before launching
         if self.delay > 0:
             if pygame.time.get_ticks() - self.spawn_time >= self.delay:
@@ -507,10 +517,9 @@ class BossProjectile(Projectile):
             else:
                 return  # still waiting
         if self.launch:
-            #Move the projectile based on speed and direction
+            # Move the projectile based on speed and direction
             self.p_x += self.dx * self.p_speed
             self.p_y += self.dy * self.p_speed
-
 
     # Rotate the projectile
     def spin_projectile(self):
@@ -529,38 +538,32 @@ class BossProjectile(Projectile):
             else:
                 return  # still waiting
         if self.follow_prime_laser:
-                p = self.follow_prime_laser
+            p = self.follow_prime_laser
 
+            # recompute direction from prime angle
+            dx = math.cos(p.angle)
+            dy = math.sin(p.angle)
 
-                # recompute direction from prime angle
-                dx = math.cos(p.angle)
-                dy = math.sin(p.angle)
+            # stay behind prime along its direction
+            self.p_x = p.p_x - dx * self.offset
+            self.p_y = p.p_y - dy * self.offset
+            return
 
-
-                # stay behind prime along its direction
-                self.p_x = p.p_x - dx * self.offset
-                self.p_y = p.p_y - dy * self.offset
-                return
-       
         if self.spin:
-           
+
             # Increase angle by orbit speed
             self.angle += self.orbit_speed
 
-
             # slowly expand outward
-            self.radius += self.stable_radius  
-
+            self.radius += self.stable_radius
 
             # translate rotations into position
             self.p_x = self.origin_x + math.cos(self.angle) * self.radius
             self.p_y = self.origin_y + math.sin(self.angle) * self.radius
 
-
-       
-    #Boss projectiles will collide with player to do damage        
-    #After a hit, player is immune for a little.
-    def player_collision(self,player):
+    # Boss projectiles will collide with player to do damage
+    # After a hit, player is immune for a little.
+    def player_collision(self, player):
         """
         Function to hit the player if a boss projectile comes too close.
         The player will lose health and become immune for a short period.
@@ -570,21 +573,21 @@ class BossProjectile(Projectile):
         Args:
             player: An instance of the player class
         """
-       
+
         # If the projectile has a delay, do not damage the player
         if self.delay > 0:
             return
         # Calculate distance between player and projectile
         dist = math.hypot(player.x - self.p_x, player.y - self.p_y)
-        #Check for player and projectile collision wile player isnt immune
-        if dist < (0.9*self.p_size + player.size) and not player.immune:
+        # Check for player and projectile collision wile player isnt immune
+        if dist < (0.9 * self.p_size + player.size) and not player.immune:
             # lower player hp
             player.hp -= self.p_damage
             print("Hit!")
             print(player.hp)
-            #slight pause after being hit
+            # slight pause after being hit
             pygame.time.delay(100)
-            #player is immune temporarily
+            # player is immune temporarily
             player.immune = True
             player.immune_start_time = pygame.time.get_ticks()
             player_damage.play()
@@ -601,32 +604,26 @@ class PlayerProjectile(Projectile):
     image: string determining the image of the projectile
     player_p_hitbox: list of attributes to construct hitbox rectangle
     """
-   
 
-
-
-
-    def __init__(self,p_speed,p_size,p_damage,p_x,p_y):
-        super().__init__(p_speed,p_size,p_damage,p_x,p_y)
+    def __init__(
+        self, p_speed, p_size, p_damage, p_x, p_y
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+        super().__init__(p_speed, p_size, p_damage, p_x, p_y)
         self.hit = False
         self.image = attack_img
-        self.player_p_hitbox = (self.p_x,self.p_y,2,5)
-
-
-
+        self.player_p_hitbox = (self.p_x, self.p_y, 2, 5)
 
     def launch_projectile(self):
         """
-        Function that launches projectiles. Changes projectile position based on speed and direction.
+        Launches the projectile by updating its position based on speed and direction.
         """
         # Move the projectile
         self.p_x += self.dx * self.p_speed
         self.p_y += self.dy * self.p_speed
         # Create hitbox
-        self.player_p_hitbox = (self.p_x,self.p_y,2,5)
+        self.player_p_hitbox = (self.p_x, self.p_y, 2, 5)
 
-
-    def boss_collision(self,boss):
+    def boss_collision(self, boss):
         """
         Function to hit the boss if a player projectile comes too close.
         The boss will lose health.
@@ -638,11 +635,11 @@ class PlayerProjectile(Projectile):
         # If boss is hit, do not check for collisions for the same projectile
         if self.hit:
             return
-        #Create rectangles
+        # Create rectangles
         player_rect = pygame.Rect(self.player_p_hitbox)
         boss_rect = pygame.Rect(boss.hitbox)
-       
-        #Check for player projectile and boss rectangle collision
+
+        # Check for player projectile and boss rectangle collision
         if player_rect.colliderect(boss_rect):
             # Lower boss hp
             boss.hp -= self.p_damage
@@ -651,27 +648,16 @@ class PlayerProjectile(Projectile):
             # Set the player projectile and boss hit attributes to true
             self.hit = True
             boss.hit = True
-           
-           
-           
-   
-
-
-
-
-
-
 
 
 # Do later
-#View Class
+# View Class
 
 
 class View:
     """
     Class Containing functions to draw all sprites.
     """
-
 
     def draw_player(self, player, player_img):
         """
@@ -681,23 +667,21 @@ class View:
         Args:
             player: instance of the Player class
         """
-        rect = player_img.get_rect(center= (player.x,player.y))
+        rect = player_img.get_rect(center=(player.x, player.y))
         screen.blit(player_img, rect)
-       
 
-
-    def draw_boss(self, boss, boss_img):
+    def draw_boss(self, boss, image):
         """
         Draws the sprite for the boss.
 
 
         Args:
-            boss: instance of the Player class
+            boss: instance of the Boss class
+            image: the boss sprite image
         """
-        rect = boss_img.get_rect(center= (boss.x,boss.y))
-        screen.blit(boss_img, rect)
-           
-                           
+        rect = image.get_rect(center=(boss.x, boss.y))
+        screen.blit(image, rect)
+
     def draw_bullet(self, bullet, live):
         """
         Draws the sprite for the projectiles.
@@ -705,31 +689,32 @@ class View:
 
         Args:
             bullet: instance of the Projectile class
-        """    
-        #color = (255, 50, 50) if bullet.delay > 0 else (50, 200, 50)
-        #pygame.draw.circle(screen, color,
-            #(int(bullet.p_x), int(bullet.p_y)), bullet.p_size)
+        """
+        # color = (255, 50, 50) if bullet.delay > 0 else (50, 200, 50)
+        # pygame.draw.circle(screen, color,
+        # (int(bullet.p_x), int(bullet.p_y)), bullet.p_size)
         if not live:
             return
-       
+
         img = bullet.image
-       
+
         if hasattr(bullet, "is_laser") and bullet.is_laser:
             angle_deg = -math.degrees(
-                bullet.angle if not bullet.follow_prime_laser else bullet.follow_prime_laser.angle
-        )
+                bullet.angle
+                if not bullet.follow_prime_laser
+                else bullet.follow_prime_laser.angle
+            )
             img = pygame.transform.rotate(bullet.base_image, angle_deg)
-       
+
         rect = img.get_rect(center=(bullet.p_x, bullet.p_y))
         screen.blit(img, rect)
-
 
     def draw_boss_healthbar(self, boss):
         """
         Displays the boss healthbar at the top of the screen displaying the boss's
         current hp
         Args:
-            boss: instance of the Boss Class  
+            boss: instance of the Boss Class
         """
         # position + size of bar
         bar_width = 800
@@ -737,36 +722,31 @@ class View:
         x = WIN_W // 2 - bar_width // 2
         y = WIN_H * 0.05
 
-
         # health ratio (0 → 1)
         ratio = boss.hp / 1000
-
 
         # background (empty bar)
         pygame.draw.rect(screen, (60, 60, 60), (x, y, bar_width, bar_height))
 
-
         # draw bar showing current health
-        pygame.draw.rect(screen, (200, 50, 50),
-            (x, y, int(bar_width * ratio), bar_height))
-
+        pygame.draw.rect(
+            screen, (200, 50, 50), (x, y, int(bar_width * ratio), bar_height)
+        )
 
         # border
-        pygame.draw.rect(screen, (255, 255, 255),
-            (x, y, bar_width, bar_height), 2)
-       
-         # Boss name
+        pygame.draw.rect(screen, (255, 255, 255), (x, y, bar_width, bar_height), 2)
+
+        # Boss name
         name_text = font.render("The Rhavenger of Yoontown", True, (255, 255, 255))
         text_rect = name_text.get_rect(center=(WIN_W // 2, y + bar_height + 25))
         screen.blit(name_text, text_rect)
-
 
     def draw_player_healthbar(self, player):
         """
         Displays the player healthbar at the top left of the screen displaying the player's
         current hp
         Args:
-            player: instance of the Player Class  
+            player: instance of the Player Class
         """
         # Width and height of healthbar
         bar_width = 200
@@ -775,14 +755,11 @@ class View:
         x = WIN_W * 0.03
         y = WIN_H * 0.03
 
-
         # health ratio
         ratio = player.hp / 325  # since player max is 325
 
-
         # background
         pygame.draw.rect(screen, (60, 60, 60), (x, y, bar_width, bar_height))
-
 
         # color based on health
         if ratio > 0.5:
@@ -793,20 +770,15 @@ class View:
             color = (255, 50, 50)
 
         # fill bar
-        pygame.draw.rect(screen, color,
-            (x, y, int(bar_width * ratio), bar_height))
-
+        pygame.draw.rect(screen, color, (x, y, int(bar_width * ratio), bar_height))
 
         # make border
-        pygame.draw.rect(screen, (255, 255, 255),
-            (x, y, bar_width, bar_height), 2)  
+        pygame.draw.rect(screen, (255, 255, 255), (x, y, bar_width, bar_height), 2)
 
         # Add text for the player, gilbert
         name_text = small_font.render("Gilbert", True, (255, 255, 255))
-        text_rect = name_text.get_rect(center=(x + bar_width/2, y + bar_height + 15))
+        text_rect = name_text.get_rect(center=(x + bar_width / 2, y + bar_height + 15))
         screen.blit(name_text, text_rect)
-
-
 
 
 # Controller Classes
@@ -825,19 +797,16 @@ class Controller:
         """
         # Do player movement with WASD keys
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a]:
+        if keys[pygame.K_a]:  # pylint: disable=no-member
             player.x -= player.movespeed
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d]:  # pylint: disable=no-member
             player.x += player.movespeed
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w]:  # pylint: disable=no-member
             player.y -= player.movespeed
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s]:  # pylint: disable=no-member
             player.y += player.movespeed
 
-
-
-
-    def attack(self,player,attacks,timers):
+    def attack(self, player, attacks, timers):
         """
         Function for the player launching projectiles.
         Args:
@@ -848,9 +817,11 @@ class Controller:
         # Read player input
         keys = pygame.key.get_pressed()
         # If space bar is hit, fire attack. Delay is cooldown between attacks
-        if (keys[pygame.K_SPACE]) and delay (timers, "player_shot", 200):
+        if (keys[pygame.K_SPACE]) and delay(  # pylint: disable=no-member
+            timers, "player_shot", 200
+        ):
             # create projectile from player position
-            proj = PlayerProjectile(8, 4, 4, player.x, player.y)
+            proj = PlayerProjectile(8, 4, 100, player.x, player.y)
             # shoot to the side
             proj.dx = 1
             proj.dy = 0
@@ -858,21 +829,20 @@ class Controller:
             attacks.append(proj)
 
 
+def fire_bullet(bullets, player):
+    """
+    Function to fire boss projectiles.
+    Args:
+       bullets: The list of bullets (instances of boss projectiles)
+       player: Instance of the Player class
+    """
+    for bullet in bullets:
+        bullet.launch_projectile()
+        bullet.spin_projectile()
+        bullet.player_collision(player)
 
-def fire_bullet(bullets,player):
-     """
-     Function to fire boss projectiles.
-     Args:
-        bullets: The list of bullets (instances of boss projectiles)
-        player: Instance of the Player class
-     """
-     for bullet in bullets:
-         bullet.launch_projectile()
-         bullet.spin_projectile()
-         bullet.player_collision(player)
 
-
-def fire_attack(attacks,boss):
+def fire_attack(attacks, boss):
     """
     Function to fire player projectiles.
     Args:
@@ -880,8 +850,8 @@ def fire_attack(attacks,boss):
         boss: Instance of the Boss class
     """
     for attack in attacks:
-         attack.launch_projectile()
-         attack.boss_collision(boss)
+        attack.launch_projectile()
+        attack.boss_collision(boss)
 
 
 def delay(timers, key, ms):
@@ -895,42 +865,43 @@ def delay(timers, key, ms):
     Returns:
         False- if the time in ms has not passed
         True- if the time in ms has passed
-     """
+    """
     now = pygame.time.get_ticks()
-
 
     if key not in timers:
         timers[key] = now
         return False
 
-
     if now - timers[key] >= ms:
         timers[key] = now
         return True
 
-
     return False
 
 
-class Button:
+class Button:  # pylint: disable=too-few-public-methods
+    """A clickable UI button that renders an image and detects mouse clicks."""
 
     def __init__(self, x, y, image, scale):
         width = image.get_width()
         height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.image = pygame.transform.scale(
+            image, (int(width * scale), int(height * scale))
+        )
         self.rect = self.image.get_rect()
-        self.rect.topleft = (x,y)
+        self.rect.topleft = (x, y)
         self.clicked = False
 
     def draw(self):
+        """Draw the button and return True if it was clicked this frame."""
         action = False
-        # get mourse position
+        # get mouse position
         pos = pygame.mouse.get_pos()
-        
+
         # check if mouse is hovering over the button and clicks
         if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked == True
+            if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
+                self.clicked = True
                 action = True
         # draw button on screen
         screen.blit(self.image, (self.rect.x, self.rect.y))
