@@ -15,7 +15,7 @@ pygame.mixer.music.load("audio/pygameboss.mp3")
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1)
 
-# Create game instances
+# Create class instances
 boss = Boss(WIN_W * 0.8, WIN_H/2)
 player = Player(WIN_W * 0.05, WIN_H/2)
 controller = Controller()
@@ -35,7 +35,7 @@ timers = {}
 # Set arena image
 arena_img = arena
 
-# Animation logic
+# Start animation logic
 num = 0
 num2 = 0
 num3 = 0
@@ -84,6 +84,7 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
+    # Radial attack
     if current_attack == 1:
         if delay(timers,"radial",150):
             boss.radial(bullets,random.random()*5)
@@ -92,6 +93,7 @@ while run:
             radialusage = 0
             current_attack = None
     
+    # Spinning Radial attack
     if current_attack == 2:
         if delay(timers,"spinning_radial",200):
             boss.spinning_radial(bullets,random.random()*5)
@@ -100,6 +102,7 @@ while run:
             spinning_radialusage = 0
             current_attack = None
     
+    # Blooming Radial attack
     if current_attack == 3:
         if delay(timers,"blooming_radial",300):
             boss.blooming_radial(bullets,player)
@@ -109,6 +112,7 @@ while run:
             blooming_radialusage = 0
             current_attack = None
 
+    # Javelin attack
     if current_attack == 4:
         if delay(timers,"javelin",javelintimer):
             boss.javelin(bullets,player)
@@ -120,30 +124,29 @@ while run:
             print("start delay")
             current_attack = None
 
+    # Attack pattern 1 Radial, Javelin
     if current_attack == 5:
         if delay(timers,"pattern1-1",400):
             boss.radial(bullets,random.random()*5)
             pattern1usage += 1
-            print("1")
         if delay(timers, "pattern1-2",1500):
             boss.javelin(bullets,player)
             pattern1usage += 1
-            print("2")
         if pattern1usage > 20:
             pattern1active = False
             pattern1usage = 0
             current_attack = None
 
+    # Attack pattern 2: Spinning Radial, Javelin
     if current_attack == 6:
         if delay(timers,"pattern2-1",1500):
             boss.spinning_radial(bullets,random.random()*5)
             pattern2usage += 1
-            print("1")
         if delay(timers, "pattern2-2",500):
             boss.javelin(bullets,player)
             pattern2usage += 1
-            print("2")
 
+    # Starfall attack (Phase 2)
     if  current_attack == 7:
         if delay(timers,"starfall",200):
             boss.starfall(bullets,0.8 + random.random() * 0.2)
@@ -154,6 +157,22 @@ while run:
             starfallusage = 0
             current_attack = None    
 
+    # Attack pattern 3: Blooming Radial, Laser
+    if current_attack==8:  
+        if delay(timers,"pattern3-1",1000):
+            boss.blooming_radial(bullets,player)
+            pattern3usage += 1
+        if delay(timers,"pattern3-2",500 + inf):
+            boss.laser(bullets,player)
+            inf = 9999
+            laseractive = True
+        if pattern3usage > 5:
+            pattern3usage = 0
+            laseractive = False
+            inf = 0
+            current_attack = None
+
+    # Meteor attack (Phase 2)
     if meteoractive:
         if choose_pos:
             pos = WIN_H * (0.2 + random.random() * 0.6)
@@ -171,12 +190,12 @@ while run:
             inf = 0
             timers.pop("meteor")
 
-
+    # When Boss enters Phase 2, Meteor becomes active
     if phase2 and delay(timers,'meteortimer',15000 + attack_time):
         choose_pos = True
         meteoractive = True
 
-
+    # Checks if Javelin is lodged into the wall and determines when it disappears
     if lodge and not current_attack == 4 and not current_attack == 5 and not current_attack ==6:
         if delay(timers,"linger",3500):    
                 bullets = [b for b in bullets if not b.lodged]
@@ -191,21 +210,6 @@ while run:
             else:
                 lodge = True
 
-
-    if current_attack==8:  
-        if delay(timers,"pattern3-1",1000):
-            boss.blooming_radial(bullets,player)
-            pattern3usage += 1
-            print("1")
-        if delay(timers,"pattern3-2",500 + inf):
-            boss.laser(bullets,player)
-            inf = 9999
-            laseractive = True
-        if pattern3usage > 5:
-            pattern3usage = 0
-            laseractive = False
-            inf = 0
-            current_attack = None
     
 
     # Boss picks attack
