@@ -4,9 +4,7 @@ Initialises pygame, manages game state, runs the boss fight, and handles win/los
 """
 
 import random
-
 import pygame
-
 from ytr_config import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from ytr_classes import *  # pylint: disable=wildcard-import,unused-wildcard-import
 
